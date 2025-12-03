@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>書籍ECサイト - 商品一覧</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>📚 書籍ECサイト</h1>
+            <nav>
+                <a href="index.html">商品一覧</a>
+                <a href="cart.html">カート <span id="cart-count" class="badge">0</span></a>
+                <a href="login.html">ログイン</a>
+                <a href="register.html">新規登録</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 検索・フィルター -->
+    <section class="search-section">
+        <div class="container">
+            <input type="text" id="search-input" placeholder="書籍名、著者名で検索..." class="search-box">
+
+            <div class="filters">
+                <select id="category-filter">
+                    <option value="">すべてのカテゴリ</option>
+                    <option value="tech">技術書</option>
+                    <option value="novel">小説</option>
+                    <option value="business">ビジネス書</option>
+                </select>
+
+                <select id="price-filter">
+                    <option value="">すべての価格帯</option>
+                    <option value="0-1000">〜1,000円</option>
+                    <option value="1000-3000">1,000〜3,000円</option>
+                    <option value="3000-">3,000円〜</option>
+                </select>
+
+                <label>
+                    <input type="checkbox" id="stock-filter"> 在庫あり
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- 商品一覧 -->
+    <main class="container">
+        <h2>書籍一覧</h2>
+        <div id="product-list" class="product-grid">
+            <!-- JavaScriptで生成 -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 書籍ECサイト</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        // 商品一覧の表示
+        function displayProducts(products) {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+
+            if (products.length === 0) {
+                productList.innerHTML = '<p class="no-results">該当する書籍が見つかりませんでした</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = `product-card ${product.stock === 0 ? 'out-of-stock' : ''}`;
+
+                productCard.innerHTML = `
+                    <img src="${generateBookCover(product, 200, 280)}" alt="${product.title}">
+                    <h3>${product.title}</h3>
+                    <p class="author">${product.author}</p>
+                    <p class="price">¥${product.price.toLocaleString()}</p>
+                    <p class="stock ${product.stock === 0 ? 'out-of-stock-text' : product.stock <= 5 ? 'low-stock' : ''}">
+                        ${product.stock === 0 ? '在庫切れ' : product.stock <= 5 ? '残りわずか' : `在庫：${product.stock}冊`}
+                    </p>
+                    <a href="product-detail.html?id=${product.id}" class="btn btn-primary ${product.stock === 0 ? 'disabled' : ''}">
+                        詳細を見る
+                    </a>
+                `;
+
+                productList.appendChild(productCard);
+            });
+        }
+
+        // フィルタリング処理
+        function filterProducts() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            const priceRange = document.getElementById('price-filter').value;
+            const stockOnly = document.getElementById('stock-filter').checked;
+
+            let filtered = products.filter(product => {
+                // 検索
+                const matchesSearch = product.title.toLowerCase().includes(searchTerm) ||
+                                    product.author.toLowerCase().includes(searchTerm);
+
+                // カテゴリ
+                const matchesCategory = !category || product.category === category;
+
+                // 価格
+                let matchesPrice = true;
+                if (priceRange) {
+                    const [min, max] = priceRange.split('-').map(p => p ? parseInt(p) : null);
+                    if (max) {
+                        matchesPrice = product.price >= min && product.price < max;
+                    } else {
+                        matchesPrice = product.price >= min;
+                    }
+                }
+
+                // 在庫
+                const matchesStock = !stockOnly || product.stock > 0;
+
+                return matchesSearch && matchesCategory && matchesPrice && matchesStock;
+            });
+
+            displayProducts(filtered);
+        }
+
+        // イベントリスナー
+        document.getElementById('search-input').addEventListener('input', filterProducts);
+        document.getElementById('category-filter').addEventListener('change', filterProducts);
+        document.getElementById('price-filter').addEventListener('change', filterProducts);
+        document.getElementById('stock-filter').addEventListener('change', filterProducts);
+
+        // 初期表示
+        displayProducts(products);
+        updateCartCount();
+    </script>
+</body>
+</html>

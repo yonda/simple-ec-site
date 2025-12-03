@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注文完了 - 書籍ECサイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>📚 書籍ECサイト</h1>
+            <nav>
+                <a href="index.html">商品一覧</a>
+                <a href="cart.html">カート <span id="cart-count" class="badge">0</span></a>
+                <a href="login.html">ログイン</a>
+                <a href="register.html">新規登録</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 注文完了 -->
+    <main class="container">
+        <div class="form-container">
+            <div class="success-message" style="text-align: center; padding: 2rem;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem;">✓ ご注文ありがとうございます！</h2>
+                <p>ご注文を承りました。</p>
+            </div>
+
+            <div id="order-details" style="margin-top: 2rem;">
+                <!-- JavaScriptで生成 -->
+            </div>
+
+            <div style="margin-top: 2rem; text-align: center;">
+                <a href="index.html" class="btn btn-primary">トップページに戻る</a>
+                <div id="order-history-link" style="margin-top: 1rem;">
+                    <!-- ログイン済みの場合に表示 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 書籍ECサイト</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        const lastOrder = localStorage.getItem('last_order');
+
+        if (!lastOrder) {
+            document.getElementById('order-details').innerHTML = '<p class="error-message">注文情報が見つかりませんでした。</p>';
+        } else {
+            const order = JSON.parse(lastOrder);
+
+            let itemsHTML = '';
+            order.items.forEach(item => {
+                const product = getProductById(item.productId);
+                if (!product) return;
+
+                const subtotal = product.price * item.quantity;
+
+                itemsHTML += `
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;">
+                        <span>${product.title} × ${item.quantity}</span>
+                        <span>¥${subtotal.toLocaleString()}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('order-details').innerHTML = `
+                <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 5px;">
+                    <h3 style="margin-bottom: 1rem;">注文詳細</h3>
+                    <p><strong>注文番号:</strong> ${order.id}</p>
+                    <p><strong>注文日:</strong> ${order.date}</p>
+
+                    <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">配送先</h4>
+                    <p>${order.shippingAddress.name}</p>
+                    <p>〒${order.shippingAddress.zipCode}</p>
+                    <p>${order.shippingAddress.address}</p>
+                    <p>TEL: ${order.shippingAddress.phone}</p>
+
+                    <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">注文内容</h4>
+                    ${itemsHTML}
+
+                    <div style="display: flex; justify-content: space-between; padding: 1rem 0; font-size: 1.2rem; font-weight: bold;">
+                        <span>合計金額:</span>
+                        <span>¥${order.total.toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+
+            // ログイン済みの場合、注文履歴へのリンクを表示
+            const user = getCurrentUser();
+            if (user) {
+                document.getElementById('order-history-link').innerHTML = `
+                    <a href="order-history.html" style="color: #3498db; text-decoration: none;">注文履歴はこちら</a>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

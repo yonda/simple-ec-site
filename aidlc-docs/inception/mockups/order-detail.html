@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注文詳細 - 書籍ECサイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>📚 書籍ECサイト</h1>
+            <nav>
+                <a href="index.html">商品一覧</a>
+                <a href="cart.html">カート <span id="cart-count" class="badge">0</span></a>
+                <a href="order-history.html">注文履歴</a>
+                <a href="#" onclick="logout(); return false;">ログアウト</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 注文詳細 -->
+    <main class="container">
+        <h2>注文詳細</h2>
+
+        <div id="order-detail-content">
+            <!-- JavaScriptで生成 -->
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <a href="order-history.html" class="btn btn-primary">注文履歴に戻る</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 書籍ECサイト</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        // ログインチェック
+        const user = getCurrentUser();
+        if (!user) {
+            alert('ログインが必要です。');
+            window.location.href = 'login.html';
+        }
+
+        const orderId = getQueryParam('id');
+        const order = orderHistory.find(o => o.id === orderId);
+
+        if (!order) {
+            document.getElementById('order-detail-content').innerHTML = '<p class="no-results">注文が見つかりませんでした</p>';
+        } else {
+            let itemsHTML = '';
+            order.items.forEach(item => {
+                const product = getProductById(item.productId);
+                if (!product) return;
+
+                const subtotal = item.price * item.quantity;
+
+                itemsHTML += `
+                    <div class="cart-item">
+                        <img src="${generateBookCover(product, 100, 140)}" alt="${product.title}">
+                        <div class="cart-item-info">
+                            <h3>${product.title}</h3>
+                            <p class="author">${product.author}</p>
+                            <p>数量: ${item.quantity}</p>
+                        </div>
+                        <div class="cart-item-actions">
+                            <p class="price">¥${item.price.toLocaleString()}</p>
+                            <p>小計: ¥${subtotal.toLocaleString()}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('order-detail-content').innerHTML = `
+                <div class="cart-items">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        <div>
+                            <h3>注文情報</h3>
+                            <p><strong>注文番号:</strong> ${order.id}</p>
+                            <p><strong>注文日:</strong> ${order.date}</p>
+                            <p><strong>ステータス:</strong> <span style="color: #27ae60; font-weight: bold;">${order.status}</span></p>
+                        </div>
+                        <div>
+                            <h3>配送先</h3>
+                            <p>${order.shippingAddress.name}</p>
+                            <p>〒${order.shippingAddress.zipCode}</p>
+                            <p>${order.shippingAddress.address}</p>
+                            <p>TEL: ${order.shippingAddress.phone}</p>
+                        </div>
+                    </div>
+
+                    <h3>注文内容</h3>
+                    ${itemsHTML}
+
+                    <div class="cart-summary">
+                        <div style="display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold;">
+                            <span>合計金額:</span>
+                            <span>¥${order.total.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

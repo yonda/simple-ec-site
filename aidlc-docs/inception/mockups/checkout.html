@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注文確認 - 書籍ECサイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>📚 書籍ECサイト</h1>
+            <nav>
+                <a href="index.html">商品一覧</a>
+                <a href="cart.html">カート <span id="cart-count" class="badge">0</span></a>
+                <a href="login.html">ログイン</a>
+                <a href="register.html">新規登録</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 注文確認 -->
+    <main class="container">
+        <h2>注文確認</h2>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            <!-- 配送先情報入力 -->
+            <div>
+                <div class="cart-items">
+                    <h3>配送先情報</h3>
+                    <form id="shipping-form">
+                        <div class="form-group">
+                            <label for="name">お名前 *</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="zipcode">郵便番号 *</label>
+                            <input type="text" id="zipcode" placeholder="123-4567" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="address">住所 *</label>
+                            <input type="text" id="address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">電話番号 *</label>
+                            <input type="tel" id="phone" placeholder="090-1234-5678" required>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 注文内容 -->
+                <div class="cart-items" style="margin-top: 2rem;">
+                    <h3>注文内容</h3>
+                    <div id="order-items">
+                        <!-- JavaScriptで生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 注文サマリー -->
+            <div>
+                <div class="cart-summary">
+                    <h3>注文サマリー</h3>
+                    <div id="order-summary">
+                        <!-- JavaScriptで生成 -->
+                    </div>
+                    <button class="btn btn-success" onclick="placeOrder()" style="width: 100%; margin-top: 1rem;">
+                        注文を確定する
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 書籍ECサイト</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        // カートチェック
+        const cart = getCart();
+        if (cart.length === 0) {
+            alert('カートが空です。');
+            window.location.href = 'index.html';
+        }
+
+        // 注文内容表示
+        function displayOrderItems() {
+            const orderItemsDiv = document.getElementById('order-items');
+            let html = '';
+
+            cart.forEach(item => {
+                const product = getProductById(item.productId);
+                if (!product) return;
+
+                const subtotal = product.price * item.quantity;
+
+                html += `
+                    <div class="cart-item">
+                        <img src="${generateBookCover(product, 80, 112)}" alt="${product.title}">
+                        <div class="cart-item-info">
+                            <h4>${product.title}</h4>
+                            <p>数量: ${item.quantity}</p>
+                        </div>
+                        <div class="cart-item-actions">
+                            <p class="price">¥${subtotal.toLocaleString()}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            orderItemsDiv.innerHTML = html;
+        }
+
+        // 注文サマリー表示
+        function displayOrderSummary() {
+            const total = getCartTotal();
+            document.getElementById('order-summary').innerHTML = `
+                <div style="margin: 1rem 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>商品合計:</span>
+                        <span>¥${total.toLocaleString()}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>送料:</span>
+                        <span>無料</span>
+                    </div>
+                    <hr>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; margin-top: 1rem;">
+                        <span>合計:</span>
+                        <span>¥${total.toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 注文確定
+        function placeOrder() {
+            const form = document.getElementById('shipping-form');
+
+            if (!form.checkValidity()) {
+                alert('すべての必須項目を入力してください。');
+                form.reportValidity();
+                return;
+            }
+
+            // 在庫チェック
+            let stockError = false;
+            cart.forEach(item => {
+                if (!checkStock(item.productId, item.quantity)) {
+                    const product = getProductById(item.productId);
+                    alert(`${product.title}の在庫が不足しています。`);
+                    stockError = true;
+                }
+            });
+
+            if (stockError) {
+                return;
+            }
+
+            // 配送先情報を保存
+            const shippingInfo = {
+                name: document.getElementById('name').value,
+                zipCode: document.getElementById('zipcode').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value
+            };
+
+            // 注文情報を保存（モック）
+            const orderData = {
+                id: 'ORD-' + new Date().getTime(),
+                date: new Date().toISOString().split('T')[0],
+                items: cart,
+                total: getCartTotal(),
+                shippingAddress: shippingInfo
+            };
+
+            localStorage.setItem('last_order', JSON.stringify(orderData));
+
+            // 在庫を減らす（モック）
+            cart.forEach(item => {
+                reduceStock(item.productId, item.quantity);
+            });
+
+            // カートをクリア
+            clearCart();
+
+            // 注文完了ページへ
+            window.location.href = 'order-complete.html';
+        }
+
+        displayOrderItems();
+        displayOrderSummary();
+    </script>
+</body>
+</html>

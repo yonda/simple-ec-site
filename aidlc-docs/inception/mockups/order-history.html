@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注文履歴 - 書籍ECサイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>📚 書籍ECサイト</h1>
+            <nav>
+                <a href="index.html">商品一覧</a>
+                <a href="cart.html">カート <span id="cart-count" class="badge">0</span></a>
+                <a href="order-history.html">注文履歴</a>
+                <a href="#" onclick="logout(); return false;">ログアウト</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 注文履歴 -->
+    <main class="container">
+        <h2>注文履歴</h2>
+
+        <div id="order-history-content">
+            <!-- JavaScriptで生成 -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 書籍ECサイト</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        // ログインチェック
+        const user = getCurrentUser();
+        if (!user) {
+            alert('ログインが必要です。');
+            window.location.href = 'login.html';
+        }
+
+        function displayOrderHistory() {
+            const content = document.getElementById('order-history-content');
+
+            if (orderHistory.length === 0) {
+                content.innerHTML = '<p class="no-results">注文履歴はありません</p>';
+                return;
+            }
+
+            let html = '<div class="order-list">';
+
+            orderHistory.forEach(order => {
+                html += `
+                    <div class="order-item" onclick="window.location.href='order-detail.html?id=${order.id}'">
+                        <h3>注文番号: ${order.id}</h3>
+                        <div class="meta">
+                            <p>注文日: ${order.date}</p>
+                            <p>ステータス: ${order.status}</p>
+                        </div>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;">
+                            合計: ¥${order.total.toLocaleString()}
+                        </p>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        displayOrderHistory();
+    </script>
+</body>
+</html>

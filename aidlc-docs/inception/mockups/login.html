@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - 書籍ECサイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>📚 書籍ECサイト</h1>
+            <nav>
+                <a href="index.html">商品一覧</a>
+                <a href="cart.html">カート <span id="cart-count" class="badge">0</span></a>
+                <a href="login.html">ログイン</a>
+                <a href="register.html">新規登録</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ログインフォーム -->
+    <main class="container">
+        <div class="form-container">
+            <h2 style="text-align: center; margin-bottom: 2rem;">ログイン</h2>
+
+            <div id="error-message"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">メールアドレス</label>
+                    <input type="email" id="email" required placeholder="example@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">パスワード</label>
+                    <input type="password" id="password" required placeholder="8文字以上">
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%;">ログイン</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 1.5rem;">
+                アカウントをお持ちでない方は<a href="register.html" style="color: #3498db;">こちら</a>
+            </p>
+
+            <div style="margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-radius: 5px;">
+                <p style="font-size: 0.9rem; color: #7f8c8d; margin-bottom: 0.5rem;"><strong>テストアカウント:</strong></p>
+                <p style="font-size: 0.9rem; color: #7f8c8d;">メール: test@example.com</p>
+                <p style="font-size: 0.9rem; color: #7f8c8d;">パスワード: password123</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 書籍ECサイト</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // モック認証（本番環境では実際の認証APIを使用）
+            if (email === 'test@example.com' && password === 'password123') {
+                const user = {
+                    id: 1,
+                    email: email,
+                    name: '山田太郎'
+                };
+
+                setCurrentUser(user);
+                alert('ログインしました！');
+                window.location.href = 'index.html';
+            } else {
+                document.getElementById('error-message').innerHTML = `
+                    <div class="error-message">
+                        メールアドレスまたはパスワードが正しくありません
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

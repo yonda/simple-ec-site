@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規登録 - 書籍ECサイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>📚 書籍ECサイト</h1>
+            <nav>
+                <a href="index.html">商品一覧</a>
+                <a href="cart.html">カート <span id="cart-count" class="badge">0</span></a>
+                <a href="login.html">ログイン</a>
+                <a href="register.html">新規登録</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 新規登録フォーム -->
+    <main class="container">
+        <div class="form-container">
+            <h2 style="text-align: center; margin-bottom: 2rem;">新規登録</h2>
+
+            <div id="error-message"></div>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="name">お名前 *</label>
+                    <input type="text" id="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">メールアドレス *</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">パスワード *</label>
+                    <input type="password" id="password" required minlength="8" placeholder="8文字以上">
+                </div>
+
+                <div class="form-group">
+                    <label for="password-confirm">パスワード（確認） *</label>
+                    <input type="password" id="password-confirm" required minlength="8">
+                </div>
+
+                <div class="form-group">
+                    <label for="zipcode">郵便番号 *</label>
+                    <input type="text" id="zipcode" required placeholder="123-4567">
+                </div>
+
+                <div class="form-group">
+                    <label for="address">住所 *</label>
+                    <input type="text" id="address" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">電話番号 *</label>
+                    <input type="tel" id="phone" required placeholder="090-1234-5678">
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%;">登録する</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 1.5rem;">
+                既にアカウントをお持ちの方は<a href="login.html" style="color: #3498db;">こちら</a>
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 書籍ECサイト</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('password-confirm').value;
+            const name = document.getElementById('name').value;
+
+            // バリデーション
+            if (password !== passwordConfirm) {
+                document.getElementById('error-message').innerHTML = `
+                    <div class="error-message">
+                        パスワードが一致しません
+                    </div>
+                `;
+                return;
+            }
+
+            if (password.length < 8) {
+                document.getElementById('error-message').innerHTML = `
+                    <div class="error-message">
+                        パスワードは8文字以上で入力してください
+                    </div>
+                `;
+                return;
+            }
+
+            // メールアドレスの形式チェック
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                document.getElementById('error-message').innerHTML = `
+                    <div class="error-message">
+                        有効なメールアドレスを入力してください
+                    </div>
+                `;
+                return;
+            }
+
+            // モック登録（本番環境では実際の登録APIを使用）
+            // 既存ユーザーチェック（モック）
+            if (email === 'test@example.com') {
+                document.getElementById('error-message').innerHTML = `
+                    <div class="error-message">
+                        このメールアドレスは既に登録されています
+                    </div>
+                `;
+                return;
+            }
+
+            // ユーザー登録成功（モック）
+            const user = {
+                id: Date.now(),
+                email: email,
+                name: name,
+                zipCode: document.getElementById('zipcode').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value
+            };
+
+            setCurrentUser(user);
+            alert('登録が完了しました！');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

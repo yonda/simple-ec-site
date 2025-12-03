@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ショッピングカート - 書籍ECサイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>📚 書籍ECサイト</h1>
+            <nav>
+                <a href="index.html">商品一覧</a>
+                <a href="cart.html">カート <span id="cart-count" class="badge">0</span></a>
+                <a href="login.html">ログイン</a>
+                <a href="register.html">新規登録</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- カート内容 -->
+    <main class="container">
+        <h2>ショッピングカート</h2>
+
+        <div id="cart-content">
+            <!-- JavaScriptで生成 -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 書籍ECサイト</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        function displayCart() {
+            const cart = getCart();
+            const cartContent = document.getElementById('cart-content');
+
+            if (cart.length === 0) {
+                cartContent.innerHTML = '<p class="no-results">カートは空です</p>';
+                return;
+            }
+
+            let cartHTML = '<div class="cart-items">';
+
+            cart.forEach(item => {
+                const product = getProductById(item.productId);
+                if (!product) return;
+
+                const subtotal = product.price * item.quantity;
+
+                cartHTML += `
+                    <div class="cart-item">
+                        <img src="${generateBookCover(product, 100, 140)}" alt="${product.title}">
+                        <div class="cart-item-info">
+                            <h3>${product.title}</h3>
+                            <p class="author">${product.author}</p>
+                        </div>
+                        <div class="cart-item-actions">
+                            <p class="price">¥${product.price.toLocaleString()}</p>
+                            <div class="quantity-selector">
+                                <label>数量:</label>
+                                <input
+                                    type="number"
+                                    value="${item.quantity}"
+                                    min="0"
+                                    max="${product.stock}"
+                                    onchange="updateQuantity(${product.id}, this.value)"
+                                >
+                            </div>
+                            <p>小計: ¥${subtotal.toLocaleString()}</p>
+                            <button class="btn btn-danger" onclick="removeItem(${product.id})">削除</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            cartHTML += '</div>';
+
+            const total = getCartTotal();
+
+            cartHTML += `
+                <div class="cart-summary">
+                    <div class="total">
+                        <span>合計金額:</span>
+                        <span>¥${total.toLocaleString()}</span>
+                    </div>
+                    <a href="checkout.html" class="btn btn-success" style="width: 100%; display: block; text-align: center;">レジに進む</a>
+                </div>
+            `;
+
+            cartContent.innerHTML = cartHTML;
+        }
+
+        function updateQuantity(productId, quantity) {
+            const qty = parseInt(quantity);
+            if (qty === 0) {
+                if (confirm('この商品をカートから削除しますか？')) {
+                    removeFromCart(productId);
+                    displayCart();
+                }
+            } else {
+                if (!checkStock(productId, qty)) {
+                    alert('在庫を超える数量は設定できません。');
+                    displayCart();
+                    return;
+                }
+                updateCartItemQuantity(productId, qty);
+                displayCart();
+            }
+        }
+
+        function removeItem(productId) {
+            if (confirm('この商品をカートから削除しますか？')) {
+                removeFromCart(productId);
+                displayCart();
+            }
+        }
+
+        displayCart();
+    </script>
+</body>
+</html>

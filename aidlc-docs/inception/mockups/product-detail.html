@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品詳細 - 書籍ECサイト</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <div class="container">
+            <h1>📚 書籍ECサイト</h1>
+            <nav>
+                <a href="index.html">商品一覧</a>
+                <a href="cart.html">カート <span id="cart-count" class="badge">0</span></a>
+                <a href="login.html">ログイン</a>
+                <a href="register.html">新規登録</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 商品詳細 -->
+    <main class="container">
+        <div id="product-detail" class="product-detail">
+            <!-- JavaScriptで生成 -->
+        </div>
+        <div style="margin-top: 2rem;">
+            <a href="index.html" class="btn btn-primary">商品一覧に戻る</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 書籍ECサイト</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        const productId = parseInt(getQueryParam('id'));
+        const product = getProductById(productId);
+
+        if (!product) {
+            document.getElementById('product-detail').innerHTML = '<p class="no-results">商品が見つかりませんでした</p>';
+        } else {
+            const isOutOfStock = product.stock === 0;
+            const isLowStock = product.stock > 0 && product.stock <= 5;
+
+            document.getElementById('product-detail').innerHTML = `
+                <div class="product-detail-content">
+                    <div>
+                        <img src="${generateBookCover(product, 400, 560)}" alt="${product.title}">
+                    </div>
+                    <div class="product-info">
+                        <h2>${product.title}</h2>
+                        <div class="meta">
+                            <p>著者: ${product.author}</p>
+                            <p>出版社: ${product.publisher}</p>
+                            <p>ISBN: ${product.isbn}</p>
+                        </div>
+                        <p class="price">¥${product.price.toLocaleString()}</p>
+                        <p class="stock ${isOutOfStock ? 'out-of-stock-text' : isLowStock ? 'low-stock' : ''}">
+                            ${isOutOfStock ? '在庫切れ' : isLowStock ? `残りわずか（在庫：${product.stock}冊）` : `在庫：${product.stock}冊`}
+                        </p>
+                        <div class="description">
+                            <h3>商品説明</h3>
+                            <p>${product.description}</p>
+                        </div>
+                        <div class="quantity-selector">
+                            <label for="quantity">数量:</label>
+                            <input type="number" id="quantity" value="1" min="1" max="${product.stock}" ${isOutOfStock ? 'disabled' : ''}>
+                        </div>
+                        <button
+                            class="btn btn-success ${isOutOfStock ? 'disabled' : ''}"
+                            onclick="handleAddToCart()"
+                            ${isOutOfStock ? 'disabled' : ''}
+                        >
+                            ${isOutOfStock ? '在庫切れ' : 'カートに追加'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleAddToCart() {
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (!checkStock(productId, quantity)) {
+                alert('選択した数量は在庫を超えています。');
+                return;
+            }
+
+            addToCart(productId, quantity);
+            alert('カートに追加しました！');
+        }
+    </script>
+</body>
+</html>
